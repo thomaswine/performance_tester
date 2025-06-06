@@ -1,0 +1,32 @@
+version: '3'
+
+services:
+  influxdb:
+    image: influxdb:1.8
+    ports:
+      - "8086:8086"
+    environment:
+      - INFLUXDB_DB=k6
+    volumes:
+      - influxdb-data:/var/lib/influxdb
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    
+
+  k6:
+    image: grafana/k6
+    depends_on:
+      - influxdb
+    volumes:
+      - ./scripts:/scripts
+      - ./results:/scripts/results
+    command: run --out influxdb=http://influxdb:8086/k6 /scripts/test.js
+
+volumes:
+  influxdb-data:
+  grafana-storage:
